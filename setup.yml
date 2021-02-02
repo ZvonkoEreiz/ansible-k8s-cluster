@@ -1,0 +1,9 @@
+---
+# set up web server
+  - hosts: all
+    become: yes
+    gather_facts: yes
+    roles:
+      - common
+      - docker_install
+      - kubelet

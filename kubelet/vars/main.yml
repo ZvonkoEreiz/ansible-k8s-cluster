@@ -1,0 +1,26 @@
+---
+# vars file for kubelet
+
+# preinstall.yml variables
+
+iptables:
+  - iptables
+  - iptables-services
+
+fw_rules_master:
+      - { port: "22", protocol: tcp }
+      - { port: "80", protocol: tcp }
+      - { port: "443", protocol: tcp }
+      - { port: "6443", protocol: tcp }
+      - { port: "2379:2380", protocol: tcp }
+      - { port: "10250:10252", protocol: tcp }
+      - { port: "10255", protocol: tcp }
+
+fw_rules_workers:
+      - { port: "22", protocol: tcp }
+      - { port: "80", protocol: tcp }
+      - { port: "443", protocol: tcp }
+      - { port: "6783", protocol: tcp }
+      - { port: "10250", protocol: tcp }
+      - { port: "10255", protocol: tcp }
+      - { port: "30000:32767", protocol: tcp}

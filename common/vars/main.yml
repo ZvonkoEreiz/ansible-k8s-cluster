@@ -1,0 +1,19 @@
+---
+# vars file for common
+
+packages:
+  - epel-release
+  - vim
+  - wget
+  - curl
+  - tar  
+  - strace
+  - bind-utils
+  - nmap
+  - traceroute
+  - whois
+  - telnet
+  - git
+  - make
+  - unzip
+

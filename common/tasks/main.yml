@@ -1,0 +1,12 @@
+---
+# tasks file for common
+
+  - name: install sar
+    yum: name=sysstat state=latest
+    notify: start and enable sysstat
+
+  - name: install packages
+    yum: 
+      name: "{{ item }}" 
+      state: present
+    loop: "{{ packages }}"

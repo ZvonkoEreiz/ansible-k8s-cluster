@@ -1,0 +1,102 @@
+---
+
+# Remove firewalld, install and enable iptables
+
+  - name: Remove the firewalld package
+    yum:
+      name: firewalld
+      state: absent
+
+  - name: Install iptables and iptables-services
+    yum:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ iptables }}"
+
+  - name: Enable service iptables and ensure it is not masked
+    systemd:
+      name: iptables
+      enabled: yes
+      masked: no
+
+# Set up bridge and enable traffic filtering
+
+  - name: Enable kernel module br_netfilter
+    command: modprobe br_netfilter
+
+  - name: Enable traffic filtering
+    shell: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+
+  - name: Apply traffic filtering
+    shell: sysctl -p
+
+# Set up fw rules on master and workers
+
+  - name: Set the policy for the INPUT chain to ACCEPT temporarily
+    iptables:
+      chain: INPUT
+      policy: ACCEPT
+
+  - name: Flushing existing firewall rules
+    iptables:
+      chain: INPUT
+      flush: yes
+
+  - name: Allow related and established connections
+    iptables:
+      chain: INPUT
+      ctstate: ESTABLISHED,RELATED
+      jump: ACCEPT
+
+  - name: Allow ICMP
+    iptables:
+      chain: INPUT
+      protocol: icmp
+      jump: ACCEPT
+
+  - name: Allow loopback
+    iptables:
+      chain: INPUT
+      in_interface: lo
+      jump: ACCEPT
+
+  - name: Open firewall ports on master server
+    iptables:
+      chain: INPUT
+      protocol: "{{ item.protocol }}"
+      destination_port: "{{ item.port }}"
+      jump: ACCEPT
+    loop: "{{ fw_rules_master }}"
+    when: "'master' in group_names"
+
+  - name: Open firewall ports on worker servers
+    iptables:
+      chain: INPUT
+      protocol: "{{ item.protocol }}"
+      destination_port: "{{ item.port }}"
+      jump: ACCEPT
+    loop: "{{ fw_rules_workers }}"
+    when: "'workers' in group_names"
+
+  - name: Set the policy for the INPUT chain to DROP
+    iptables:
+      chain: INPUT
+      policy: DROP
+
+  - name: Saving iptables rules
+    shell: service iptables save
+
+# Disable swap
+
+  - name: Remove swapfile from /etc/fstab
+    mount:
+      name: "{{ item }}"
+      fstype: swap
+      state: absent
+    with_items:
+      - swap
+      - none
+
+  - name: Disable swap
+    command: swapoff -a
+    when: ansible_swaptotal_mb > 0

@@ -1,0 +1,22 @@
+---
+# tasks file for kubelet
+
+  - name: Import preinstall tasks
+    import_tasks: preinstall.yml
+
+  - name: Import install tasks
+    import_tasks: install.yml
+
+  - name: Import kubermaster tasks
+    import_tasks: master.yml
+    when: "'master' in group_names"
+
+  - name: Import workers tasks
+    import_tasks: workers.yml
+    when: "'workers' in group_names"
+
+  - name: Restart kubelet
+    service:
+      name: kubelet
+      daemon_reload: yes
+      state: restarted

@@ -1,0 +1,16 @@
+---
+
+# Add workers to cluser using join command
+
+  - name: Copy join_command to workers
+    copy:
+      src: buffer/join_command
+      dest: /tmp/join_command
+
+  - name: Add workers to cluster
+    shell: /bin/bash /tmp/join_command
+
+  - name: Clean up /tmp/join_command
+    file:
+      dest: /tmp/join_command
+      state: absent
